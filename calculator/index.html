@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Calculator</title>
+    <title>Advanced Scientific Calculator</title>
     <style>
         :root {
             --primary-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -23,6 +23,10 @@
             --text-color: #333;
             --history-bg: #f8f9fa;
             --history-border: #ddd;
+            --toggle-bg: #ffc107;
+            --toggle-color: #212529;
+            --active-bg: #ff6b35;
+            --active-color: white;
         }
 
         [data-theme="dark"] {
@@ -43,6 +47,10 @@
             --text-color: #e2e8f0;
             --history-bg: #4a5568;
             --history-border: #718096;
+            --toggle-bg: #d69e2e;
+            --toggle-color: #1a202c;
+            --active-bg: #f56500;
+            --active-color: white;
         }
 
         [data-theme="neon"] {
@@ -63,6 +71,10 @@
             --text-color: #00ffff;
             --history-bg: #111111;
             --history-border: #00ffff;
+            --toggle-bg: #ffff00;
+            --toggle-color: #000000;
+            --active-bg: #ff6600;
+            --active-color: #ffffff;
         }
 
         body {
@@ -87,7 +99,7 @@
             padding: 25px;
             border-radius: 20px;
             box-shadow: 0 15px 40px rgba(0,0,0,0.3);
-            width: 350px;
+            width: 400px;
             transition: all 0.3s ease;
         }
         
@@ -136,22 +148,81 @@
             padding: 0 20px;
             border: 2px solid var(--display-border);
             border-radius: 12px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             background: var(--display-bg);
             color: var(--text-color);
             box-sizing: border-box;
             font-weight: bold;
         }
         
+        .mode-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            gap: 10px;
+        }
+        
+        .angle-mode {
+            display: flex;
+            background: var(--number-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid var(--display-border);
+        }
+        
+        .angle-btn {
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            color: var(--text-color);
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        
+        .angle-btn.active {
+            background: var(--active-bg);
+            color: var(--active-color);
+        }
+        
+        .sci-toggle {
+            background: var(--toggle-bg);
+            color: var(--toggle-color);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+            font-size: 12px;
+        }
+        
+        .sci-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .sci-toggle.active {
+            background: var(--active-bg);
+            color: var(--active-color);
+        }
+        
         .buttons {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 12px;
+            grid-template-rows: repeat(8, 1fr);
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .buttons.scientific {
+            grid-template-columns: repeat(6, 1fr);
         }
         
         button {
-            height: 65px;
-            font-size: 16px;
+            height: 55px;
+            font-size: 14px;
             border: none;
             border-radius: 12px;
             cursor: pointer;
@@ -161,8 +232,8 @@
         }
         
         button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.3);
         }
         
         button:active {
@@ -182,7 +253,15 @@
         .equals {
             background: var(--equals-bg);
             color: var(--equals-color);
-            grid-row: span 2;
+            grid-column: 4 / 6;
+            grid-row: 7;
+            height: auto;
+            font-size: 24px;
+        }
+        
+        .buttons.scientific .equals {
+            grid-column: 4 / 7;
+            grid-row: 7;
         }
         
         .clear {
@@ -196,7 +275,21 @@
         }
         
         .zero {
-            grid-column: span 2;
+            grid-column: 1 / 3;
+            grid-row: 7;
+        }
+        
+        .decimal {
+            grid-column: 3;
+            grid-row: 7;
+        }
+        
+        .small-btn {
+            font-size: 11px;
+        }
+        
+        .extra-small {
+            font-size: 10px;
         }
         
         .history-panel {
@@ -270,8 +363,8 @@
             margin-top: 3px;
         }
         
-        .small-btn {
-            font-size: 12px;
+        .hidden {
+            display: none !important;
         }
         
         @media (max-width: 768px) {
@@ -282,7 +375,7 @@
             
             .calculator, .history-panel {
                 width: 90vw;
-                max-width: 350px;
+                max-width: 400px;
             }
         }
     </style>
@@ -291,7 +384,7 @@
     <div class="app-container">
         <div class="calculator">
             <div class="header">
-                <h2 class="title">Calculator</h2>
+                <h2 class="title">Scientific Calculator</h2>
                 <div class="theme-selector">
                     <button class="theme-btn light" onclick="setTheme('light')" title="Light Theme"></button>
                     <button class="theme-btn dark" onclick="setTheme('dark')" title="Dark Theme"></button>
@@ -301,48 +394,89 @@
             
             <input type="text" class="display" id="display" readonly>
             
-            <div class="buttons">
+            <div class="mode-controls">
+                <div class="angle-mode">
+                    <button class="angle-btn active" onclick="setAngleMode('deg')" id="degBtn">DEG</button>
+                    <button class="angle-btn" onclick="setAngleMode('rad')" id="radBtn">RAD</button>
+                </div>
+                <button class="sci-toggle" onclick="toggleScientific()" id="sciToggle">SCI</button>
+            </div>
+            
+            <div class="buttons" id="buttonGrid">
                 <!-- Row 1 -->
                 <button class="clear" onclick="clearDisplay()">C</button>
                 <button class="clear" onclick="clearEntry()">CE</button>
-                <button class="special" onclick="appendToDisplay('√')">√</button>
-                <button class="special" onclick="appendToDisplay('^')">x²</button>
+                <button class="special" onclick="appendToDisplay('(')">(</button>
+                <button class="special" onclick="appendToDisplay(')')">)</button>
                 <button class="operator" onclick="deleteLast()">←</button>
+                
+                <!-- Scientific Row 1 (hidden initially) -->
+                <button class="special small-btn sci-only hidden" onclick="appendToDisplay('sin(')">sin</button>
                 
                 <!-- Row 2 -->
                 <button class="special" onclick="appendToDisplay('%')">%</button>
                 <button class="special" onclick="appendToDisplay('1/')">1/x</button>
                 <button class="special small-btn" onclick="appendToDisplay('log(')">log</button>
                 <button class="special small-btn" onclick="appendToDisplay('ln(')">ln</button>
-                <button class="operator" onclick="appendToDisplay('/')">÷</button>
+                <button class="special" onclick="appendToDisplay('π')">π</button>
                 
-                <!-- Row 3 -->
+                <!-- Scientific Row 2 (hidden initially) -->
+                <button class="special small-btn sci-only hidden" onclick="appendToDisplay('cos(')">cos</button>
+                
+                <!-- Row 3: All operators in one line -->
+                <button class="operator" onclick="appendToDisplay('+')">+</button>
+                <button class="operator" onclick="appendToDisplay('-')">-</button>
+                <button class="operator" onclick="appendToDisplay('*')">×</button>
+                <button class="operator" onclick="appendToDisplay('/')">÷</button>
+                <button class="special" onclick="appendToDisplay('e')">e</button>
+                
+                <!-- Scientific Row 3 (hidden initially) -->
+                <button class="special small-btn sci-only hidden" onclick="appendToDisplay('tan(')">tan</button>
+                
+                <!-- Row 4 -->
                 <button class="number" onclick="appendToDisplay('7')">7</button>
                 <button class="number" onclick="appendToDisplay('8')">8</button>
                 <button class="number" onclick="appendToDisplay('9')">9</button>
-                <button class="operator" onclick="appendToDisplay('*')">×</button>
-                <button class="special" onclick="appendToDisplay('π')">π</button>
+                <button class="special" onclick="appendToDisplay('√')">√</button>
+                <button class="special" onclick="appendToDisplay('^')">x²</button>
                 
-                <!-- Row 4 -->
+                <!-- Scientific Row 4 (hidden initially) -->
+                <button class="special extra-small sci-only hidden" onclick="appendToDisplay('asin(')">asin</button>
+                
+                <!-- Row 5 -->
                 <button class="number" onclick="appendToDisplay('4')">4</button>
                 <button class="number" onclick="appendToDisplay('5')">5</button>
                 <button class="number" onclick="appendToDisplay('6')">6</button>
-                <button class="operator" onclick="appendToDisplay('-')">-</button>
-                <button class="special" onclick="appendToDisplay('e')">e</button>
+                <button class="special extra-small" onclick="appendToDisplay('factorial(')">n!</button>
+                <button class="special" onclick="appendToDisplay('^3')">x³</button>
                 
-                <!-- Row 5 -->
+                <!-- Scientific Row 5 (hidden initially) -->
+                <button class="special extra-small sci-only hidden" onclick="appendToDisplay('acos(')">acos</button>
+                
+                <!-- Row 6 -->
                 <button class="number" onclick="appendToDisplay('1')">1</button>
                 <button class="number" onclick="appendToDisplay('2')">2</button>
                 <button class="number" onclick="appendToDisplay('3')">3</button>
-                <button class="operator" onclick="appendToDisplay('+')">+</button>
+                <button class="special extra-small" onclick="appendToDisplay('exp(')">exp</button>
+                <button class="special extra-small" onclick="appendToDisplay('**')">x^y</button>
+                
+                <!-- Scientific Row 6 (hidden initially) -->
+                <button class="special extra-small sci-only hidden" onclick="appendToDisplay('atan(')">atan</button>
+                
+                <!-- Row 7 -->
+                <button class="number zero" onclick="appendToDisplay('0')">0</button>
+                <button class="number decimal" onclick="appendToDisplay('.')">.</button>
                 <button class="equals" onclick="calculate()">=</button>
                 
-                <!-- Row 6 -->
-                <button class="number zero" onclick="appendToDisplay('0')">0</button>
-                <button class="number" onclick="appendToDisplay('.')">.</button>
-                <!-- Two empty spaces to balance the grid -->
+                <!-- Row 8 - Empty row removed -->
                 <div></div>
                 <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                
+                <!-- Scientific Row 8 (hidden initially) -->
+                <div class="sci-only hidden"></div>
             </div>
         </div>
         
@@ -358,11 +492,18 @@
     <script>
         let display = document.getElementById('display');
         let historyList = document.getElementById('historyList');
+        let buttonGrid = document.getElementById('buttonGrid');
+        let sciToggle = document.getElementById('sciToggle');
+        let degBtn = document.getElementById('degBtn');
+        let radBtn = document.getElementById('radBtn');
+        
         let currentInput = '';
         let operator = '';
         let previousInput = '';
         let shouldResetDisplay = false;
         let history = [];
+        let isScientificMode = false;
+        let angleMode = 'deg'; // 'deg' or 'rad'
 
         // Theme management
         function setTheme(theme) {
@@ -376,6 +517,29 @@
             setTheme(savedTheme);
         }
 
+        // Angle mode management
+        function setAngleMode(mode) {
+            angleMode = mode;
+            degBtn.classList.toggle('active', mode === 'deg');
+            radBtn.classList.toggle('active', mode === 'rad');
+            localStorage.setItem('calculator-angle-mode', mode);
+        }
+
+        // Scientific mode toggle
+        function toggleScientific() {
+            isScientificMode = !isScientificMode;
+            buttonGrid.classList.toggle('scientific', isScientificMode);
+            sciToggle.classList.toggle('active', isScientificMode);
+            sciToggle.textContent = isScientificMode ? 'BASIC' : 'SCI';
+            
+            const sciButtons = document.querySelectorAll('.sci-only');
+            sciButtons.forEach(btn => {
+                btn.classList.toggle('hidden', !isScientificMode);
+            });
+            
+            localStorage.setItem('calculator-sci-mode', isScientificMode);
+        }
+
         // Advanced mathematical functions
         function evaluateExpression(expr) {
             try {
@@ -383,14 +547,37 @@
                 expr = expr.replace(/×/g, '*');
                 expr = expr.replace(/÷/g, '/');
                 expr = expr.replace(/π/g, Math.PI);
-                expr = expr.replace(/e/g, Math.E);
+                expr = expr.replace(/e(?![a-z])/g, Math.E);
+                
+                // Handle angle conversion for trig functions
+                const angleConversion = angleMode === 'deg' ? '*(Math.PI/180)' : '';
+                const invAngleConversion = angleMode === 'deg' ? '*(180/Math.PI)' : '';
                 
                 // Handle special functions
                 expr = expr.replace(/√(\d+\.?\d*)/g, 'Math.sqrt($1)');
                 expr = expr.replace(/(\d+\.?\d*)\^(\d+\.?\d*)/g, 'Math.pow($1, $2)');
+                expr = expr.replace(/\*\*/g, '**');
+                
+                // Trigonometric functions
+                expr = expr.replace(/sin\(/g, `Math.sin(`);
+                expr = expr.replace(/cos\(/g, `Math.cos(`);
+                expr = expr.replace(/tan\(/g, `Math.tan(`);
+                expr = expr.replace(/asin\(/g, `Math.asin(`);
+                expr = expr.replace(/acos\(/g, `Math.acos(`);
+                expr = expr.replace(/atan\(/g, `Math.atan(`);
+                
+                // Convert degrees to radians for trig functions if needed
+                if (angleMode === 'deg') {
+                    expr = expr.replace(/Math\.(sin|cos|tan)\(/g, 'Math.$1((Math.PI/180)*');
+                    expr = expr.replace(/Math\.(asin|acos|atan)\(/g, '(180/Math.PI)*Math.$1(');
+                }
+                
+                // Other functions
                 expr = expr.replace(/log\(/g, 'Math.log10(');
                 expr = expr.replace(/ln\(/g, 'Math.log(');
+                expr = expr.replace(/exp\(/g, 'Math.exp(');
                 expr = expr.replace(/1\/(\d+\.?\d*)/g, '1/$1');
+                expr = expr.replace(/factorial\((\d+)\)/g, 'factorial($1)');
                 
                 // Handle percentage
                 expr = expr.replace(/(\d+\.?\d*)%/g, '($1/100)');
@@ -399,6 +586,17 @@
             } catch (error) {
                 throw new Error('Invalid expression');
             }
+        }
+
+        // Factorial function
+        function factorial(n) {
+            if (n < 0) return NaN;
+            if (n === 0 || n === 1) return 1;
+            let result = 1;
+            for (let i = 2; i <= n; i++) {
+                result *= i;
+            }
+            return result;
         }
 
         function appendToDisplay(value) {
@@ -424,6 +622,11 @@
             }
             
             if (value === '^') {
+                display.value += '^';
+                return;
+            }
+            
+            if (value === '**') {
                 display.value += '^';
                 return;
             }
@@ -566,6 +769,18 @@
             }
         }
 
+        function loadSettings() {
+            // Load angle mode
+            const savedAngleMode = localStorage.getItem('calculator-angle-mode') || 'deg';
+            setAngleMode(savedAngleMode);
+            
+            // Load scientific mode
+            const savedSciMode = localStorage.getItem('calculator-sci-mode') === 'true';
+            if (savedSciMode) {
+                toggleScientific();
+            }
+        }
+
         // Keyboard support
         document.addEventListener('keydown', function(event) {
             const key = event.key;
@@ -586,6 +801,7 @@
         // Initialize app
         loadTheme();
         loadHistory();
+        loadSettings();
     </script>
 </body>
 </html>
