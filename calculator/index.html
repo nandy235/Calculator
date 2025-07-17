@@ -442,7 +442,7 @@
                 <button class="number" onclick="appendToDisplay('8')">8</button>
                 <button class="number" onclick="appendToDisplay('9')">9</button>
                 <button class="special" onclick="appendToDisplay('√')">√</button>
-                <button class="special" onclick="appendToDisplay('^')">x²</button>
+                <button class="special" onclick="appendToDisplay('^2')">x²</button>
                 
                 <!-- Scientific Row 4 (hidden initially) -->
                 <button class="special extra-small sci-only hidden" onclick="appendToDisplay('asin(')">asin</button>
@@ -559,7 +559,7 @@
                 
                 // Handle special functions
                 expr = expr.replace(/√(\d+\.?\d*)/g, 'Math.sqrt($1)');
-                expr = expr.replace(/(\d+\.?\d*)\^(\d+\.?\d*)/g, 'Math.pow($1, $2)');
+                expr = expr.replace(/([0-9πe.()+\-*/]+)\^(\d+\.?\d*)/g, 'Math.pow($1, $2)');
                 expr = expr.replace(/\*\*/g, '**');
                 
                 // Trigonometric functions
