@@ -2,7 +2,7 @@
   "name": "Scientific Calculator",
   "short_name": "Calculator",
   "description": "Advanced Scientific Calculator with Space Theme",
-  "start_url": "/calculator/",
+  "start_url": "/",
   "display": "standalone",
   "theme_color": "#667eea",
   "background_color": "#0a0a1a",
