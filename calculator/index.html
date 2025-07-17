@@ -504,6 +504,10 @@
         let currentInput = '';
         let operator = '';
         let previousInput = '';
+        let lastExpression = '';
+        let lastOperator = '';
+        let lastOperand = '';
+        let lastResult = null;
         let shouldResetDisplay = false;
         let history = [];
         let isScientificMode = false;
@@ -675,26 +679,52 @@
             }
         }
 
-        function calculate() {
-            if (display.value === '') return;
-            
-            try {
-                const expression = display.value;
-                const result = evaluateExpression(expression);
-                
-                // Round to avoid floating point precision issues
-                const roundedResult = Math.round(result * 100000000) / 100000000;
-                
-                // Add to history
-                addToHistory(expression, roundedResult);
-                
-                display.value = roundedResult;
-                shouldResetDisplay = true;
-            } catch (error) {
-                alert('Error: Invalid calculation');
-                clearDisplay();
-            }
+     function calculate() {
+    // Repeat last operation if display is empty after pressing '=' again
+    if (display.value === '' && lastResult !== null && lastOperator && lastOperand !== '') {
+        let expression = `${lastResult}${lastOperator}${lastOperand}`;
+        try {
+            const result = evaluateExpression(expression);
+            const roundedResult = Math.round(result * 100000000) / 100000000;
+            addToHistory(expression, roundedResult);
+            display.value = roundedResult;
+            lastResult = roundedResult;
+            shouldResetDisplay = true;
+        } catch (error) {
+            alert('Error: Invalid repeated calculation');
+            clearDisplay();
         }
+        return;
+    }
+
+    try {
+        const expression = display.value;
+
+        // Match: (number/operator/number) at the end of the expression
+        const match = expression.match(/(.+)([+\-×÷^])(\d+\.?\d*)$/);
+        if (match) {
+            lastExpression = expression;
+            lastOperator = match[2].replace('×', '*').replace('÷', '/').replace('^', '**');
+            lastOperand = match[3];
+        } else {
+            lastOperator = '';
+            lastOperand = '';
+        }
+
+        const result = evaluateExpression(expression);
+        const roundedResult = Math.round(result * 100000000) / 100000000;
+
+        addToHistory(expression, roundedResult);
+        display.value = roundedResult;
+        lastResult = roundedResult;
+        shouldResetDisplay = true;
+
+    } catch (error) {
+        alert('Error: Invalid calculation');
+        clearDisplay();
+    }
+}
+
 
         function clearDisplay() {
             display.value = '';
