@@ -302,38 +302,47 @@
             <input type="text" class="display" id="display" readonly>
             
             <div class="buttons">
+                <!-- Row 1 -->
                 <button class="clear" onclick="clearDisplay()">C</button>
                 <button class="clear" onclick="clearEntry()">CE</button>
                 <button class="special" onclick="appendToDisplay('√')">√</button>
                 <button class="special" onclick="appendToDisplay('^')">x²</button>
                 <button class="operator" onclick="deleteLast()">←</button>
                 
+                <!-- Row 2 -->
                 <button class="special" onclick="appendToDisplay('%')">%</button>
                 <button class="special" onclick="appendToDisplay('1/')">1/x</button>
+                <button class="special small-btn" onclick="appendToDisplay('log(')">log</button>
+                <button class="special small-btn" onclick="appendToDisplay('ln(')">ln</button>
                 <button class="operator" onclick="appendToDisplay('/')">÷</button>
                 
+                <!-- Row 3 -->
                 <button class="number" onclick="appendToDisplay('7')">7</button>
                 <button class="number" onclick="appendToDisplay('8')">8</button>
                 <button class="number" onclick="appendToDisplay('9')">9</button>
                 <button class="operator" onclick="appendToDisplay('*')">×</button>
-                <button class="special small-btn" onclick="appendToDisplay('log(')">log</button>
+                <button class="special" onclick="appendToDisplay('π')">π</button>
                 
+                <!-- Row 4 -->
                 <button class="number" onclick="appendToDisplay('4')">4</button>
                 <button class="number" onclick="appendToDisplay('5')">5</button>
                 <button class="number" onclick="appendToDisplay('6')">6</button>
                 <button class="operator" onclick="appendToDisplay('-')">-</button>
-                <button class="special small-btn" onclick="appendToDisplay('ln(')">ln</button>
+                <button class="special" onclick="appendToDisplay('e')">e</button>
                 
+                <!-- Row 5 -->
                 <button class="number" onclick="appendToDisplay('1')">1</button>
                 <button class="number" onclick="appendToDisplay('2')">2</button>
                 <button class="number" onclick="appendToDisplay('3')">3</button>
                 <button class="operator" onclick="appendToDisplay('+')">+</button>
                 <button class="equals" onclick="calculate()">=</button>
                 
+                <!-- Row 6 -->
                 <button class="number zero" onclick="appendToDisplay('0')">0</button>
                 <button class="number" onclick="appendToDisplay('.')">.</button>
-                <button class="special" onclick="appendToDisplay('π')">π</button>
-                <button class="special" onclick="appendToDisplay('e')">e</button>
+                <!-- Two empty spaces to balance the grid -->
+                <div></div>
+                <div></div>
             </div>
         </div>
         
@@ -379,8 +388,6 @@
                 // Handle special functions
                 expr = expr.replace(/√(\d+\.?\d*)/g, 'Math.sqrt($1)');
                 expr = expr.replace(/(\d+\.?\d*)\^(\d+\.?\d*)/g, 'Math.pow($1, $2)');
-                expr = expr.replace(/sin\(/g, 'Math.sin(');
-                expr = expr.replace(/cos\(/g, 'Math.cos(');
                 expr = expr.replace(/log\(/g, 'Math.log10(');
                 expr = expr.replace(/ln\(/g, 'Math.log(');
                 expr = expr.replace(/1\/(\d+\.?\d*)/g, '1/$1');
